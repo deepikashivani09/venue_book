@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My bookings{% endblock %}
+{% block content %}
+<h1>My bookings</h1>
+<p class="sub">Requests stay on hold until an admin approves them. You will get an email either way.</p>
+{% if bookings %}
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Event</th><th>Venue</th><th>When</th><th>Total</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+    {% for b in bookings %}
+      <tr>
+        <td><strong>{{ b.event_name }}</strong><br><span class="meta">{{ b.guests }} guests</span></td>
+        <td>{{ b.venue_name }}</td>
+        <td>{{ b.event_date|longdate }}<br><span class="meta">{{ fmt_hour(b.start_hour) }} to {{ fmt_hour(b.end_hour) }}</span></td>
+        <td>{{ b.total|inr }}</td>
+        <td><span class="pill {{ b.status }}">{{ b.status }}</span>{% if b.admin_note %}<br><span class="meta">{{ b.admin_note }}</span>{% endif %}</td>
+        <td>
+          <a class="btn ghost" href="{{ url_for('invoice', booking_id=b.id) }}">Invoice</a>
+          {% if b.status in ('pending', 'approved') and b.event_date >= today %}
+          <form method="post" action="{{ url_for('cancel', booking_id=b.id) }}" style="display:inline" onsubmit="return confirm('Cancel this booking?')">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="btn bad" type="submit">Cancel</button>
+          </form>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="empty">You have not booked anything yet. <a href="{{ url_for('venues') }}">Browse venues</a> to get started.</p>
+{% endif %}
+{% endblock %}

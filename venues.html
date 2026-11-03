@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Venues{% endblock %}
+{% block content %}
+<h1>Find a venue for your event</h1>
+<p class="sub">Banquet halls, conference rooms and party spaces. Pick one to see which dates are free.</p>
+
+<form class="filters" method="get">
+  <div class="field"><label for="q">Search</label><input id="q" name="q" value="{{ request.args.get('q', '') }}" placeholder="Name or area"></div>
+  <div class="field"><label for="type">Type</label>
+    <select id="type" name="type">
+      <option value="">All types</option>
+      {% for t in ['banquet', 'conference', 'party'] %}<option value="{{ t }}" {{ 'selected' if vtype == t }}>{{ t|capitalize }}</option>{% endfor %}
+    </select></div>
+  <div class="field"><label for="capacity">Minimum guests</label><input id="capacity" type="number" min="1" name="capacity" value="{{ request.args.get('capacity', '') }}"></div>
+  <button class="btn" type="submit">Filter</button>
+</form>
+
+{% if venues %}
+<div class="grid">
+  {% for v in venues %}
+  <article class="card">
+    <span class="pill approved" style="background:#e4ecf8;color:var(--primary-dark)">{{ v.type }}</span>
+    <h2 style="margin-top:8px">{{ v.name }}</h2>
+    <p class="meta">{{ v.location }}</p>
+    <p>{{ v.description }}</p>
+    <p class="meta">Up to {{ v.capacity }} guests · open {{ fmt_hour(v.open_hour) }} to {{ fmt_hour(v.close_hour) }}</p>
+    <p><strong>{{ v.price_per_hour|inr }}</strong> <span class="meta">per hour</span></p>
+    <a class="btn" href="{{ url_for('venue_detail', venue_id=v.id) }}">Check availability</a>
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty">No venues match these filters. Try a lower guest count or clear the search.</p>
+{% endif %}
+{% endblock %}

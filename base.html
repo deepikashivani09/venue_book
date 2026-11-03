@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}VenueBook{% endblock %} | VenueBook</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="{{ url_for('venues') }}">VenueBook</a>
+    <nav class="main">
+      <a href="{{ url_for('venues') }}">Venues</a>
+      {% if g.user %}
+        <a href="{{ url_for('my_bookings') }}">My bookings</a>
+        {% if g.user.role == 'admin' %}<a href="{{ url_for('admin_panel') }}">Approvals</a><a href="{{ url_for('admin_emails') }}">Sent emails</a>{% endif %}
+        <form method="post" action="{{ url_for('logout') }}" style="display:inline">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <button class="btn ghost" type="submit">Log out ({{ g.user.name.split()[0] }})</button>
+        </form>
+      {% else %}
+        <a href="{{ url_for('login') }}">Log in</a>
+        <a class="btn" href="{{ url_for('register') }}">Create account</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+<main class="wrap">
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+    <div class="flash {{ category }}" role="{{ 'alert' if category == 'error' else 'status' }}">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</main>
+</body>
+</html>

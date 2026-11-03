@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sent emails{% endblock %}
+{% block content %}
+<h1>Sent emails</h1>
+<p class="sub">Every notification the system sends. Without SMTP settings, emails are only recorded here (status "logged").</p>
+{% for m in emails %}
+<article class="card" style="margin-bottom:12px">
+  <p class="meta">{{ m.created_at }} · To {{ m.to_addr }} · <strong>{{ m.status }}</strong></p>
+  <h2>{{ m.subject }}</h2>
+  <pre class="mail">{{ m.body }}</pre>
+</article>
+{% else %}
+<p class="empty">No emails yet.</p>
+{% endfor %}
+{% endblock %}

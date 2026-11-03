@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+{% block content %}
+<div class="no-print" style="max-width:760px;margin:0 auto 14px;display:flex;justify-content:space-between">
+  <a href="{{ url_for('my_bookings') }}">Back to my bookings</a>
+  <button class="btn ghost" onclick="window.print()">Print or save as PDF</button>
+</div>
+<article class="invoice">
+  <span class="stamp">MOCK INVOICE</span>
+  <div class="invoice-top">
+    <div><h1 style="margin:0">Invoice</h1><p class="meta">{{ invoice.invoice_number }}<br>Issued {{ invoice.issued_at[:10] }}</p></div>
+    <div><strong>Billed to</strong><br>{{ booking.user_name }}<br><span class="meta">{{ booking.user_email }}</span></div>
+  </div>
+  <p><strong>{{ booking.event_name }}</strong><br>
+    {{ booking.venue_name }} · {{ booking.event_date|longdate }}, {{ fmt_hour(booking.start_hour) }} to {{ fmt_hour(booking.end_hour) }} · {{ booking.guests }} guests<br>
+    Status: <span class="pill {{ booking.status }}">{{ booking.status }}</span></p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Item</th><th class="num">Qty</th><th class="num">Unit price</th><th class="num">Amount</th></tr></thead>
+    <tbody>{% for l in lines %}<tr><td>{{ l.description }}</td><td class="num">{{ l.quantity }}</td><td class="num">{{ l.unit_price|inr }}</td><td class="num">{{ l.amount|inr }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  <div class="totals">
+    <div><span>Subtotal</span><span>{{ invoice.subtotal|inr }}</span></div>
+    <div><span>GST (18%)</span><span>{{ invoice.tax|inr }}</span></div>
+    <div class="grand"><span>Total</span><span>{{ invoice.total|inr }}</span></div>
+  </div>
+  <p class="meta" style="margin-top:28px">This is a sample invoice for demonstration. No payment is collected and it is not a tax document.</p>
+</article>
+{% endblock %}

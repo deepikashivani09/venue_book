@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Book {{ venue.name }}{% endblock %}
+{% block content %}
+<p class="meta"><a href="{{ url_for('venue_detail', venue_id=venue.id) }}">Back to {{ venue.name }}</a></p>
+<h1>Book {{ venue.name }}</h1>
+<p class="sub">Up to {{ venue.capacity }} guests · {{ venue.price_per_hour|inr }} per hour</p>
+
+<form id="booking-form" method="post" data-venue="{{ venue.id }}" class="two-col">
+  <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+  <div class="card">
+    <h2>Event details</h2>
+    <div class="field"><label for="event_name">Event name</label><input id="event_name" name="event_name" required value="{{ form.event_name }}" placeholder="e.g. Annual sales meet"></div>
+    <div class="row">
+      <div class="field"><label for="date">Date</label><input id="date" type="date" name="date" required min="{{ today }}" value="{{ form.date }}"></div>
+      <div class="field"><label for="guests">Guests</label><input id="guests" type="number" name="guests" min="1" max="{{ venue.capacity }}" required value="{{ form.guests }}"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label for="start">Starts</label>
+        <select id="start" name="start">{% for h in hours if h < venue.close_hour %}<option value="{{ h }}" {{ 'selected' if h == form.start }}>{{ fmt_hour(h) }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="end">Ends</label>
+        <select id="end" name="end">{% for h in hours if h > venue.open_hour %}<option value="{{ h }}" {{ 'selected' if h == form.end }}>{{ fmt_hour(h) }}</option>{% endfor %}</select></div>
+    </div>
+    <p id="slot-warning" role="alert"></p>
+
+    <h2 style="margin-top:20px">Add-ons</h2>
+    {% for a in addons %}
+    <div class="addon">
+      <input type="checkbox" id="addon{{ a.id }}" name="addons" value="{{ a.id }}" {{ 'checked' if a.id in form.addons }}>
+      <label for="addon{{ a.id }}">{{ a.name }} <strong>{{ a.price|inr }}</strong>
+        <span class="meta">{{ {'flat': 'flat fee', 'per_hour': 'per hour', 'per_guest': 'per guest'}[a.pricing] }}</span><br>
+        <span class="meta">{{ a.description }}</span></label>
+    </div>
+    {% endfor %}
+  </div>
+
+  <aside class="card">
+    <h2>Price estimate</h2>
+    <div id="quote"></div>
+    <button id="submit-btn" class="btn" type="submit" style="width:100%;margin-top:16px">Request booking and generate invoice</button>
+    <p class="meta">Your slot is held while the request is reviewed. Nothing is charged: invoices here are mock invoices.</p>
+  </aside>
+</form>
+<script src="{{ url_for('static', filename='book.js') }}"></script>
+{% endblock %}

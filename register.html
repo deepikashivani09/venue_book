@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<div style="max-width:420px;margin:0 auto">
+  <h1>Create your account</h1>
+  <form method="post" class="card">
+    <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+    <div class="field"><label for="name">Your name</label><input id="name" name="name" required></div>
+    <div class="field"><label for="email">Work email</label><input id="email" type="email" name="email" required></div>
+    <div class="field"><label for="password">Password</label><input id="password" type="password" name="password" minlength="8" required></div>
+    <button class="btn" type="submit" style="width:100%">Create account</button>
+    <p class="meta">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+  </form>
+</div>
+{% endblock %}

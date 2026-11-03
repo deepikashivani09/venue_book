@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ venue.name }}{% endblock %}
+{% block content %}
+<p class="meta"><a href="{{ url_for('venues') }}">All venues</a></p>
+<h1>{{ venue.name }}</h1>
+<p class="sub">{{ venue.location }} · up to {{ venue.capacity }} guests · {{ venue.price_per_hour|inr }} per hour · open {{ fmt_hour(venue.open_hour) }} to {{ fmt_hour(venue.close_hour) }}</p>
+<p>{{ venue.description }}</p>
+
+<div class="two-col">
+  <section class="card" aria-label="Availability calendar">
+    <div class="cal-head">
+      <a class="btn ghost" href="{{ url_for('venue_detail', venue_id=venue.id, month=prev_month) }}" aria-label="Previous month">Previous</a>
+      <h2 style="margin:0">{{ month_label }}</h2>
+      <a class="btn ghost" href="{{ url_for('venue_detail', venue_id=venue.id, month=next_month) }}" aria-label="Next month">Next</a>
+    </div>
+    <table class="cal">
+      <thead><tr>{% for d in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %}<th>{{ d }}</th>{% endfor %}</tr></thead>
+      <tbody>
+      {% for week in weeks %}<tr>
+        {% for c in week %}<td>
+          {% if not c.in_month %}<span class="day out">{{ c.day }}</span>
+          {% elif c.state == 'past' %}<span class="day past" title="Past date">{{ c.day }}</span>
+          {% else %}<a class="day {{ c.state }} {{ 'selected' if c.date == selected }}" href="{{ url_for('venue_detail', venue_id=venue.id, month=current_month, date=c.date) }}"
+              title="{{ 'Fully booked' if c.state == 'full' else (c.used ~ ' hours taken' if c.state == 'partial' else 'Available') }}">{{ c.day }}</a>{% endif %}
+        </td>{% endfor %}
+      </tr>{% endfor %}
+      </tbody>
+    </table>
+    <div class="legend"><span><i style="background:#fff"></i>Available</span><span><i style="background:var(--warn-bg)"></i>Partly booked</span><span><i style="background:var(--bad-bg)"></i>Fully booked</span></div>
+
+    {% if selected %}
+    <h2 style="margin-top:24px">{{ selected|longdate }}</h2>
+    <div class="hours">
+      {% for h in hours %}
+        {% set s = taken.get(h) %}
+        <div class="hour {{ s or '' }}">{{ fmt_hour(h) }}<br><small>{{ 'Booked' if s == 'approved' else ('On hold' if s == 'pending' else 'Free') }}</small></div>
+      {% endfor %}
+    </div>
+    <p class="meta">On hold means a request is waiting for admin approval. If it is rejected the slot opens up again.</p>
+    {% else %}
+    <p class="meta" style="margin-top:18px">Select a date to see its hourly slots.</p>
+    {% endif %}
+  </section>
+
+  <aside class="card">
+    <h2>Ready to book?</h2>
+    <p class="meta">Choose your time, add catering or audio equipment, and get an invoice straight away. An admin then approves the request.</p>
+    <a class="btn" href="{{ url_for('book', venue_id=venue.id, date=selected) if selected else url_for('book', venue_id=venue.id) }}">Book this venue{% if selected %} on {{ selected|longdate }}{% endif %}</a>
+  </aside>
+</div>
+{% endblock %}

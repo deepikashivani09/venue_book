@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Approvals{% endblock %}
+{% block content %}
+<h1>Booking approvals</h1>
+<p class="sub">Approving or rejecting a request emails the customer straight away.</p>
+<nav class="no-print" style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">
+  {% for s in ['pending', 'approved', 'rejected', 'cancelled', 'all'] %}
+  <a class="btn {{ '' if status == s else 'ghost' }}" href="{{ url_for('admin_panel', status=s) }}">{{ s|capitalize }}{% if s != 'all' %} ({{ counts.get(s, 0) }}){% endif %}</a>
+  {% endfor %}
+</nav>
+{% if bookings %}
+<div class="card table-wrap">
+<table>
+  <thead><tr><th>#</th><th>Event</th><th>Customer</th><th>Venue and time</th><th>Total</th><th>Status</th>{% if status == 'pending' %}<th>Decision</th>{% endif %}</tr></thead>
+  <tbody>
+  {% for b in bookings %}
+    <tr>
+      <td>{{ b.id }}</td>
+      <td><strong>{{ b.event_name }}</strong><br><span class="meta">{{ b.guests }} guests</span></td>
+      <td>{{ b.user_name }}<br><span class="meta">{{ b.user_email }}</span></td>
+      <td>{{ b.venue_name }}<br><span class="meta">{{ b.event_date|longdate }}, {{ fmt_hour(b.start_hour) }} to {{ fmt_hour(b.end_hour) }}</span></td>
+      <td>{{ b.total|inr }}<br><a class="meta" href="{{ url_for('invoice', booking_id=b.id) }}">{{ b.invoice_number }}</a></td>
+      <td><span class="pill {{ b.status }}">{{ b.status }}</span>{% if b.admin_note %}<br><span class="meta">{{ b.admin_note }}</span>{% endif %}</td>
+      {% if status == 'pending' %}
+      <td>
+        <form method="post" action="{{ url_for('admin_decision', booking_id=b.id) }}" class="inline-form">
+          <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+          <input type="hidden" name="return_status" value="{{ status }}">
+          <input type="text" name="note" placeholder="Note (required to reject)" aria-label="Note for booking {{ b.id }}">
+          <button class="btn ok" name="decision" value="approve" type="submit">Approve</button>
+          <button class="btn bad" name="decision" value="reject" type="submit">Reject</button>
+        </form>
+      </td>
+      {% endif %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% else %}
+<p class="empty">{{ 'No requests are waiting for approval.' if status == 'pending' else 'Nothing to show here yet.' }}</p>
+{% endif %}
+{% endblock %}
